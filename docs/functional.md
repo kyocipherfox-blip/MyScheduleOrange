@@ -237,7 +237,18 @@ interface StorageData {
 | 曜日選択 | checkbox × 7 | 繰り返し=毎週 のみ | 1つ以上チェック |
 | 繰り返し終了日 | date | 繰り返し ≠ なし | イベント日付以降であること |
 
-繰り返し選択肢: なし / 毎日 / 平日のみ（月〜金）/ 毎週 / 毎月
+繰り返し選択肢とアルゴリズム:
+
+| 選択肢ラベル | 内部値 | 発火条件 |
+|------------|--------|---------|
+| 繰り返しなし | `none` | - |
+| 毎日 | `daily` | 常に |
+| 平日のみ（月〜金） | `weekday` | 月〜金 |
+| 毎週（曜日を選択） | `weekly` | 選択曜日かつ週数差 % 1 = 0 |
+| 隔週（曜日を選択） | `biweekly` | 選択曜日かつ週数差 % 2 = 0 |
+| 毎月 | `monthly` | 基準日と同じ日付 |
+
+`weekly` と `biweekly` は曜日チェックボックスを表示する。
 
 **編集モード時の保存動作（繰り返し設定による分岐）：**
 
@@ -288,11 +299,15 @@ snapMin = round(min / interval) × interval
 cur = baseDate
 while cur <= endDate:
   dow = cur.getDay()
+  daysDiff  = round((cur - baseDate) / 86400000)
+  weeksDiff = floor(daysDiff / 7)
+
   include = (
-    recur == 'daily'   → true
-    recur == 'weekday' → dow in [1,2,3,4,5]
-    recur == 'weekly'  → dow in weekdays[]
-    recur == 'monthly' → cur.getDate() == baseDate.getDate()
+    recur == 'daily'    → true
+    recur == 'weekday'  → dow in [1,2,3,4,5]
+    recur == 'weekly'   → dow in weekdays[]
+    recur == 'biweekly' → dow in weekdays[] AND weeksDiff % 2 == 0
+    recur == 'monthly'  → cur.getDate() == baseDate.getDate()
   )
   if include: push { ...base, id: nextId++, date: dateToStr(cur), recurringId }
   cur += 1 day

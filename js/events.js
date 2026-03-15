@@ -134,11 +134,14 @@ export function generateRecurringEvents(base, recur, endDateStr, weekdays) {
   let cur = new Date(baseDate);
   while (cur <= endDate) {
     const dow = cur.getDay();
+    const daysDiff  = Math.round((cur - baseDate) / 86400000);
+    const weeksDiff = Math.floor(daysDiff / 7);
     let include = false;
-    if (recur === 'daily')   include = true;
-    else if (recur === 'weekday') include = dow >= 1 && dow <= 5;
-    else if (recur === 'weekly')  include = weekdays.includes(dow);
-    else if (recur === 'monthly') include = cur.getDate() === baseDate.getDate();
+    if      (recur === 'daily')    include = true;
+    else if (recur === 'weekday')  include = dow >= 1 && dow <= 5;
+    else if (recur === 'weekly')   include = weekdays.includes(dow);
+    else if (recur === 'biweekly') include = weekdays.includes(dow) && weeksDiff % 2 === 0;
+    else if (recur === 'monthly')  include = cur.getDate() === baseDate.getDate();
     if (include) {
       instances.push({
         id: state.nextId++,
@@ -208,7 +211,7 @@ export function handleModalSave(onSaved) {
     if (endDateStr < modalState.dateStr) { alert('終了日は開始日以降を指定してください'); return; }
 
     let weekdays = [];
-    if (recur === 'weekly') {
+    if (recur === 'weekly' || recur === 'biweekly') {
       weekdays = [...document.querySelectorAll('input[name="recurDay"]:checked')]
                   .map(cb => Number(cb.value));
       if (weekdays.length === 0) { alert('繰り返す曜日を1つ以上選択してください'); return; }

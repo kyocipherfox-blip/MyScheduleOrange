@@ -87,7 +87,8 @@ document.getElementById('eventRecur').addEventListener('change', () => {
   const val = document.getElementById('eventRecur').value;
   const showOptions = val !== 'none';
   document.getElementById('recurEndRow').style.display      = showOptions ? '' : 'none';
-  document.getElementById('recurWeekdaysRow').style.display = val === 'weekly' ? '' : 'none';
+  document.getElementById('recurWeekdaysRow').style.display =
+    (val === 'weekly' || val === 'biweekly') ? '' : 'none';
 });
 
 /* ── Category modal listeners ── */
