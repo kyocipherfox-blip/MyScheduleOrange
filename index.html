@@ -62,6 +62,13 @@
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <h2 id="modalTitle">予定を追加</h2>
+    <!-- シリーズ編集スコープ（繰り返し予定の編集時のみ表示） -->
+    <div id="editScopeRow" style="display:none">
+      <div class="edit-scope-toggle">
+        <button class="scope-btn active" id="scopeSingleBtn">この予定のみ編集</button>
+        <button class="scope-btn" id="scopeSeriesBtn">シリーズ全体を編集</button>
+      </div>
+    </div>
     <label>予定名</label>
     <input type="text" id="eventName" placeholder="例：会議、ランチ…" maxlength="24">
     <label>カテゴリ</label>
@@ -102,6 +109,7 @@
 
     <div class="modal-actions">
       <button class="btn btn-cancel" id="modalCancel">キャンセル</button>
+      <button class="btn btn-danger" id="modalDeleteSeriesBtn" style="display:none">シリーズ削除</button>
       <button class="btn btn-primary" id="modalSaveBtn">追加</button>
     </div>
   </div>

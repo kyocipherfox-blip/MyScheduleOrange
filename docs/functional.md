@@ -161,7 +161,10 @@ interface StorageData {
 | `startResize(e, id)` | リサイズドラッグを開始する（zoomLevel を考慮した座標変換） |
 | `openModal(dateStr, start, end, editId?)` | 予定追加/編集モーダルを開く（繰り返しセクションは常時表示。編集時は「なし」で初期化） |
 | `closeModal()` | モーダルを閉じる |
-| `generateRecurringEvents(base, recur, endDateStr, weekdays)` | 繰り返しイベント配列を生成する |
+| `generateRecurringEvents(base, recur, endDateStr, weekdays)` | 繰り返しイベント配列を生成する（各イベントに recurType / recurWeekdays / recurEndDate / recurStartDate を付与） |
+| `setEditScope(scope)` | モーダルの編集スコープ（'single'/'series'）を切り替え、繰り返しセクションの表示を制御する |
+| `deleteCurrentEventSeries(onDeleted)` | modalState が保持する editId のシリーズを全件削除する |
+| `onEventMouseDown(e, evId)` | イベントブロックのドラッグ移動を開始する（6px 以上移動でゴースト生成） |
 
 ### 4.6 categories.js
 
@@ -250,14 +253,29 @@ interface StorageData {
 
 `weekly` と `biweekly` は曜日チェックボックスを表示する。
 
-**編集モード時の保存動作（繰り返し設定による分岐）：**
+**編集モードのスコープ選択（繰り返し予定の場合のみ表示）：**
+
+| スコープ | UI | 動作 |
+|---------|-----|------|
+| この予定のみ編集（デフォルト） | トグルボタン | recurringId を削除して独立化 → 1件のみ更新 |
+| シリーズ全体を編集 | トグルボタン | 繰り返しセクションを表示し、下表のとおり処理 |
+
+**シリーズ全体編集時の繰り返し設定による分岐：**
 
 | 繰り返し設定 | 動作 |
 |------------|------|
-| なし | 対象イベントのみ更新（recurringId はそのまま保持） |
-| なし以外 | 対象イベントを削除 → その日付を起点に繰り返し予定を新規生成 |
+| なし | シリーズ全件の名前・カテゴリ・時間を一括更新（日付は変えない） |
+| なし以外 | シリーズ全件を削除 → `recurStartDate`（シリーズ最初の日付）を起点に新シリーズを生成 |
 
-編集モードで「なし以外」を選択した場合、もとのイベントが繰り返し予定の一員であっても**他の同シリーズには影響しない**（対象の1件を置き換えるのみ）。
+**非繰り返し予定の編集時：**
+
+| 繰り返し設定 | 動作 |
+|------------|------|
+| なし | その1件のみ更新 |
+| なし以外 | その1件を削除 → その日付を起点に繰り返しシリーズを生成 |
+
+**シリーズ一括削除：**
+編集モーダルの「シリーズ削除」ボタン（繰り返し予定の場合のみ表示）で confirm 後に全件削除。
 
 ### 5.6 カテゴリ管理モーダル
 
@@ -329,6 +347,23 @@ offset = dow === 0 ? -6 : -(dow - 1)
 monday = date + offset days
 ```
 
+### 6.5 ドラッグ移動座標変換
+
+```
+// ドラッグ開始時
+offsetX = startMouseX - eventRect.left   (viewport 座標)
+offsetY = startMouseY - eventRect.top
+
+// ゴースト位置更新（mousemove）
+ghost.left = e.clientX - offsetX
+ghost.top  = e.clientY - offsetY
+
+// 対象列の時刻計算
+ghostTopViewport = e.clientY - offsetY
+relActualY = (ghostTopViewport - colRect.top) / zoomLevel
+newStartMin = snapMin(yToMin(relActualY), intervalIdx)
+```
+
 ## 7. エラー処理
 
 | シナリオ | 処理 |
@@ -340,4 +375,6 @@ monday = date + offset days
 | 削除カテゴリのイベント | 先頭カテゴリ ID に移行 |
 | 繰り返し終了日が未入力 | alert で通知しモーダルを閉じない |
 | 毎週繰り返しで曜日未選択 | alert で通知しモーダルを閉じない |
-| 繰り返し削除（複数件あり） | confirm で「この予定のみ」か「すべて」を選択させる |
+| 繰り返し削除（×ボタン、複数件あり） | confirm で「この予定のみ」か「すべて」を選択させる |
+| シリーズ削除ボタン | confirm で確認後に全件削除 |
+| ドラッグ移動後に列クリック | recentlyResized フラグ（50ms）で追加モーダルの誤起動を防ぐ |

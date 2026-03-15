@@ -2,7 +2,8 @@ import { INTERVALS, INT_LABELS, START_MIN, END_MIN, ZOOM_STEP, ZOOM_MIN, ZOOM_MA
 import { clamp, snapMin, yToMin, addDays } from './utils.js';
 import { state, loadData, saveData, seedSample, getDisplayDates } from './store.js';
 import { applyCategoriesToCSS, buildLegend, openCatModal, closeCatModal, addNewCat, saveCatModal } from './categories.js';
-import { renderAll, openModal, closeModal, handleModalSave, recentlyResized } from './events.js';
+import { renderAll, openModal, closeModal, handleModalSave, recentlyResized,
+         setEditScope, deleteCurrentEventSeries } from './events.js';
 import { rebuildAll, buildAxis, buildDayCols } from './schedule.js';
 
 /* ── Column click handler ── */
@@ -10,7 +11,7 @@ function onColClick(e, div, dateStr) {
   if (recentlyResized || e.target.closest('.event-block')) return;
   const rect = div.getBoundingClientRect();
   const snap = INTERVALS[state.intervalIdx];
-  const actualY = (e.clientY - rect.top) / state.zoomLevel;
+  const actualY  = (e.clientY - rect.top) / state.zoomLevel;
   const startMin = clamp(snapMin(yToMin(actualY), state.intervalIdx), START_MIN, END_MIN - snap);
   const endMin   = clamp(startMin + 60, START_MIN + snap, END_MIN);
   openModal(dateStr, startMin, endMin);
@@ -37,9 +38,9 @@ slider.addEventListener('input', () => applyInterval(+slider.value));
 ticks.forEach(s => s.addEventListener('click', () => applyInterval(+s.dataset.idx)));
 
 /* ── Zoom control ── */
-const zoomLabel   = document.getElementById('zoomLabel');
-const zoomOutBtn  = document.getElementById('zoomOutBtn');
-const zoomInBtn   = document.getElementById('zoomInBtn');
+const zoomLabel  = document.getElementById('zoomLabel');
+const zoomOutBtn = document.getElementById('zoomOutBtn');
+const zoomInBtn  = document.getElementById('zoomInBtn');
 
 function applyZoom(level) {
   state.zoomLevel = Math.round(level * 100) / 100;
@@ -71,15 +72,28 @@ document.querySelectorAll('.view-btn').forEach(btn => {
 
 /* ── Event modal listeners ── */
 document.getElementById('modalCancel').addEventListener('click', closeModal);
+
 document.getElementById('modalSaveBtn').addEventListener('click', () => {
   handleModalSave(() => renderAll(getDisplayDates()));
 });
+
 document.getElementById('eventName').addEventListener('keydown', e => {
   if (e.key === 'Enter')  document.getElementById('modalSaveBtn').click();
   if (e.key === 'Escape') closeModal();
 });
+
 document.getElementById('modalOverlay').addEventListener('click', e => {
   if (e.target === document.getElementById('modalOverlay')) closeModal();
+});
+
+/* ── Edit scope toggle ── */
+document.getElementById('scopeSingleBtn').addEventListener('click', () => setEditScope('single'));
+document.getElementById('scopeSeriesBtn').addEventListener('click', () => setEditScope('series'));
+
+/* ── Series delete button ── */
+document.getElementById('modalDeleteSeriesBtn').addEventListener('click', () => {
+  if (!confirm('このシリーズの繰り返し予定をすべて削除しますか？')) return;
+  deleteCurrentEventSeries();
 });
 
 /* ── Recurrence select listener ── */
