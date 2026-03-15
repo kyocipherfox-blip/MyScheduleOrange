@@ -27,13 +27,25 @@ testprogram/
 
 ```typescript
 interface Event {
-  id:        number;        // 一意 ID（自動インクリメント）
-  date:      string;        // 'YYYY-MM-DD'
-  startMin:  number;        // 開始時刻（分）例: 9*60 = 540
-  endMin:    number;        // 終了時刻（分）例: 10*60 = 600
-  name:      string;        // 予定名（最大24文字）
-  category:  string;        // カテゴリ ID
+  id:           number;         // 一意 ID（自動インクリメント）
+  date:         string;         // 'YYYY-MM-DD'
+  startMin:     number;         // 開始時刻（分）例: 9*60 = 540
+  endMin:       number;         // 終了時刻（分）例: 10*60 = 600
+  name:         string;         // 予定名（最大24文字）
+  category:     string;         // カテゴリ ID
+  recurringId?: string;         // 繰り返しグループ ID（'recur_<timestamp>'）省略時は単発
 }
+```
+
+### 2.1.1 繰り返しタイプ
+
+```typescript
+type RecurType = 'none' | 'daily' | 'weekday' | 'weekly' | 'monthly';
+// none    : 繰り返しなし（単発）
+// daily   : 毎日
+// weekday : 平日のみ（月〜金）
+// weekly  : 毎週（指定曜日）
+// monthly : 毎月（基準日と同じ日付）
 ```
 
 ### 2.2 カテゴリオブジェクト
@@ -55,10 +67,11 @@ interface Category {
 interface StorageData {
   events:           Event[];
   nextId:           number;
-  intervalIdx:      number;        // 0〜3
+  intervalIdx:      number;        // 0〜3（デフォルト: 1 = 30分）
   viewMode:         number;        // 1 or 2
   currentWeekStart: string;        // 'YYYY-MM-DD'（月曜日）
   categories:       Category[];
+  zoomLevel:        number;        // 0.5〜2.0（デフォルト: 1.0）
 }
 ```
 
@@ -76,6 +89,9 @@ interface StorageData {
 | `DAY_CLASS` | ['sun','mon','tue','wed','thu','fri','sat'] | CSS クラス名 |
 | `STORE_KEY` | 'schedule_v5' | localStorage キー |
 | `SEED_KEY` | 'schedule_seeded_v5' | サンプルデータ投入済みフラグキー |
+| `ZOOM_STEP` | 0.25 | ズームの変化幅 |
+| `ZOOM_MIN` | 0.5 | 最小ズーム倍率 |
+| `ZOOM_MAX` | 2.0 | 最大ズーム倍率 |
 
 ## 4. モジュール仕様
 
@@ -140,11 +156,12 @@ interface StorageData {
 |------|------|
 | `createEventEl(ev)` | イベント DOM 要素を生成して返す |
 | `renderCol(dateStr)` | 指定日付列のイベントを再描画する |
-| `renderAll(dates?)` | 全列（または指定列）を再描画する |
-| `deleteEvent(id)` | イベントを削除し再描画する |
-| `startResize(e, id)` | リサイズドラッグを開始する |
-| `openModal(dateStr, start, end, editId?)` | 予定追加/編集モーダルを開く |
+| `renderAll(dates)` | 全列を再描画する |
+| `deleteEvent(id)` | イベントを削除（繰り返しは1件 or 全件を confirm で選択）し再描画する |
+| `startResize(e, id)` | リサイズドラッグを開始する（zoomLevel を考慮した座標変換） |
+| `openModal(dateStr, start, end, editId?)` | 予定追加/編集モーダルを開く（編集時は繰り返しセクション非表示） |
 | `closeModal()` | モーダルを閉じる |
+| `generateRecurringEvents(base, recur, endDateStr, weekdays)` | 繰り返しイベント配列を生成する |
 
 ### 4.6 categories.js
 
@@ -164,8 +181,8 @@ interface StorageData {
 
 1. `loadData()` → `seedSample()`
 2. `applyCategoriesToCSS()` → `buildLegend()`
-3. `applyInterval(intervalIdx)` → `rebuildAll()`
-4. ナビゲーション・スライダー・モーダルのイベントリスナーを登録
+3. `applyInterval(intervalIdx)` → `applyZoom(zoomLevel)` → `rebuildAll()`
+4. ナビゲーション・スライダー・モーダル・ズームのイベントリスナーを登録
 
 ## 5. UI コンポーネント仕様
 
@@ -175,11 +192,16 @@ interface StorageData {
 [◀ 前週]  2026年3月16日 〜 3月22日  [次週 ▶]   [1週間][2週間]  [⚙ カテゴリ]
 ```
 
-### 5.2 インターバルスライダー
+### 5.2 インターバルスライダー＋ズームコントロール
 
-- range input（min=0, max=3, step=1）
+```
+時間間隔  [━━●━━━] 30分    表示サイズ  [－] 100% [＋]
+```
+
+- range input（min=0, max=3, step=1）、デフォルト value=1（30分）
 - ティック：15分 / 30分 / 1時間 / 2時間
-- スライダーとティッククリック両対応
+- ズームボタン：－ で -0.25、＋ で +0.25（範囲 0.5〜2.0）
+- ズームラベル：パーセント表示（例: 100%）
 
 ### 5.3 スケジュールグリッド
 
@@ -190,10 +212,12 @@ interface StorageData {
 
 ### 5.4 イベントブロック構造
 
+繰り返し予定には名前の先頭に「↻」を表示する。
+
 ```html
 <div class="event-block {category}" data-id="{id}" style="top:{px}px; height:{px}px">
   <div class="event-content">
-    <span class="event-name">{name}</span>
+    <span class="event-name">{↻ }{name}</span>  <!-- ↻は recurringId がある場合のみ -->
     <span class="event-time-label">{start}〜{end}</span>
   </div>
   <button class="event-del">×</button>
@@ -203,12 +227,17 @@ interface StorageData {
 
 ### 5.5 予定追加/編集モーダル
 
-| 入力項目 | 型 | バリデーション |
-|---------|-----|-------------|
-| 予定名 | text | 必須・最大24文字 |
-| カテゴリ | select | 必須（選択肢あり） |
-| 開始時間 | time | - |
-| 終了時間 | time | 開始より後であること |
+| 入力項目 | 型 | 表示条件 | バリデーション |
+|---------|-----|---------|-------------|
+| 予定名 | text | 常時 | 必須・最大24文字 |
+| カテゴリ | select | 常時 | 必須（選択肢あり） |
+| 開始時間 | time | 常時 | - |
+| 終了時間 | time | 常時 | 開始より後であること |
+| 繰り返し | select | 新規追加時のみ | - |
+| 曜日選択 | checkbox × 7 | 繰り返し=毎週 のみ | 1つ以上チェック |
+| 繰り返し終了日 | date | 繰り返し ≠ なし | 当日以降であること |
+
+繰り返し選択肢: なし / 毎日 / 平日のみ（月〜金）/ 毎週 / 毎月
 
 ### 5.6 カテゴリ管理モーダル
 
@@ -227,17 +256,48 @@ border = accent × 0.55 + white × 0.45
 color  = accent × 0.48
 ```
 
-### 6.2 座標変換
+### 6.2 座標変換（ズーム考慮）
 
 ```
-top(px) = (startMin - START_MIN) × PX_PER_MIN
+top(px) = (startMin - START_MIN) × PX_PER_MIN          // DOM 内部座標（ズーム前）
 height(px) = (endMin - startMin) × PX_PER_MIN
 
-min = y(px) / PX_PER_MIN + START_MIN
+// クリック時: getBoundingClientRect() はズーム後のビューポート座標を返す
+visualY = e.clientY - rect.top
+actualY = visualY / zoomLevel                           // DOM 内部座標に換算
+min = actualY / PX_PER_MIN + START_MIN
+
+// ドラッグ時: マウス移動量も同様にズーム換算
+deltaMin = (e.clientY - startY) / (PX_PER_MIN × zoomLevel)
+
 snapMin = round(min / interval) × interval
 ```
 
+### 6.3 繰り返しイベント生成
+
+```
+cur = baseDate
+while cur <= endDate:
+  dow = cur.getDay()
+  include = (
+    recur == 'daily'   → true
+    recur == 'weekday' → dow in [1,2,3,4,5]
+    recur == 'weekly'  → dow in weekdays[]
+    recur == 'monthly' → cur.getDate() == baseDate.getDate()
+  )
+  if include: push { ...base, id: nextId++, date: dateToStr(cur), recurringId }
+  cur += 1 day
+```
+
 ### 6.3 月曜日取得
+
+```
+dow = date.getDay()  // 0=日, 1=月, ..., 6=土
+offset = dow === 0 ? -6 : -(dow - 1)
+monday = date + offset days
+```
+
+### 6.4 月曜日取得
 
 ```
 dow = date.getDay()  // 0=日, 1=月, ..., 6=土
@@ -254,3 +314,6 @@ monday = date + offset days
 | カテゴリ名が空 | alert で通知し保存しない |
 | カテゴリ0件で保存 | alert で通知し保存しない |
 | 削除カテゴリのイベント | 先頭カテゴリ ID に移行 |
+| 繰り返し終了日が未入力 | alert で通知しモーダルを閉じない |
+| 毎週繰り返しで曜日未選択 | alert で通知しモーダルを閉じない |
+| 繰り返し削除（複数件あり） | confirm で「この予定のみ」か「すべて」を選択させる |

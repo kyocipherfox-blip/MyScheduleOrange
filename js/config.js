@@ -8,6 +8,9 @@ export const DAY_JP     = ['日','月','火','水','木','金','土'];
 export const DAY_CLASS  = ['sun','mon','tue','wed','thu','fri','sat'];
 export const STORE_KEY  = 'schedule_v5';
 export const SEED_KEY   = 'schedule_seeded_v5';
+export const ZOOM_STEP  = 0.25;
+export const ZOOM_MIN   = 0.5;
+export const ZOOM_MAX   = 2.0;
 
 export const DEFAULT_CATS = [
   { id:'work',     name:'仕事・通勤',    accent:'#3b82f6' },

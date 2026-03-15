@@ -4,10 +4,11 @@ import { getMondayOf, dateToStr, strToDate, addDays, generateCatColors } from '.
 export const state = {
   events: [],
   nextId: 1,
-  intervalIdx: 2,
+  intervalIdx: 1,
   viewMode: 1,
   currentWeekStart: getMondayOf(new Date()),
-  categories: DEFAULT_CATS.map(c => ({ ...c, ...generateCatColors(c.accent) }))
+  categories: DEFAULT_CATS.map(c => ({ ...c, ...generateCatColors(c.accent) })),
+  zoomLevel: 1.0
 };
 
 export function getDisplayDates() {
@@ -21,8 +22,9 @@ export function loadData() {
     const d = JSON.parse(localStorage.getItem(STORE_KEY) || '{}');
     state.events      = d.events      || [];
     state.nextId      = d.nextId      || 1;
-    state.intervalIdx = d.intervalIdx ?? 2;
+    state.intervalIdx = d.intervalIdx ?? 1;
     state.viewMode    = d.viewMode    || 1;
+    state.zoomLevel   = d.zoomLevel   ?? 1.0;
     if (d.currentWeekStart) state.currentWeekStart = strToDate(d.currentWeekStart);
     if (d.categories?.length) state.categories = d.categories;
   } catch {}
@@ -35,7 +37,8 @@ export function saveData() {
     intervalIdx:      state.intervalIdx,
     viewMode:         state.viewMode,
     currentWeekStart: dateToStr(state.currentWeekStart),
-    categories:       state.categories
+    categories:       state.categories,
+    zoomLevel:        state.zoomLevel
   }));
 }
 

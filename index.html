@@ -29,7 +29,7 @@
 <div class="interval-control">
   <span class="interval-label">時間間隔</span>
   <div class="slider-wrap">
-    <input type="range" id="intervalSlider" min="0" max="3" step="1" value="2">
+    <input type="range" id="intervalSlider" min="0" max="3" step="1" value="1">
     <div class="slider-ticks">
       <span data-idx="0">15分</span>
       <span data-idx="1">30分</span>
@@ -37,7 +37,13 @@
       <span data-idx="3">2時間</span>
     </div>
   </div>
-  <span class="interval-badge" id="intervalBadge">1時間</span>
+  <span class="interval-badge" id="intervalBadge">30分</span>
+  <span class="interval-label" style="margin-left:16px">表示サイズ</span>
+  <div class="zoom-control">
+    <button class="zoom-btn" id="zoomOutBtn">－</button>
+    <span id="zoomLabel">100%</span>
+    <button class="zoom-btn" id="zoomInBtn">＋</button>
+  </div>
 </div>
 
 <div class="table-wrapper">
@@ -64,6 +70,35 @@
       <div><label>開始時間</label><input type="time" id="eventStart" step="900"></div>
       <div><label>終了時間</label><input type="time" id="eventEnd"   step="900"></div>
     </div>
+
+    <!-- 繰り返しセクション（新規追加時のみ表示） -->
+    <div id="recurSection">
+      <label>繰り返し</label>
+      <select id="eventRecur">
+        <option value="none">繰り返しなし</option>
+        <option value="daily">毎日</option>
+        <option value="weekday">平日のみ（月〜金）</option>
+        <option value="weekly">毎週</option>
+        <option value="monthly">毎月</option>
+      </select>
+      <div id="recurWeekdaysRow" style="display:none">
+        <label style="margin-top:8px">曜日を選択</label>
+        <div class="recur-weekdays">
+          <label><input type="checkbox" name="recurDay" value="1"> 月</label>
+          <label><input type="checkbox" name="recurDay" value="2"> 火</label>
+          <label><input type="checkbox" name="recurDay" value="3"> 水</label>
+          <label><input type="checkbox" name="recurDay" value="4"> 木</label>
+          <label><input type="checkbox" name="recurDay" value="5"> 金</label>
+          <label><input type="checkbox" name="recurDay" value="6"> 土</label>
+          <label><input type="checkbox" name="recurDay" value="0"> 日</label>
+        </div>
+      </div>
+      <div id="recurEndRow" style="display:none">
+        <label>繰り返し終了日</label>
+        <input type="date" id="recurEndDate">
+      </div>
+    </div>
+
     <div class="modal-actions">
       <button class="btn btn-cancel" id="modalCancel">キャンセル</button>
       <button class="btn btn-primary" id="modalSaveBtn">追加</button>

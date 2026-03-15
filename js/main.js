@@ -1,16 +1,17 @@
-import { INTERVALS, INT_LABELS, START_MIN, END_MIN } from './config.js';
+import { INTERVALS, INT_LABELS, START_MIN, END_MIN, ZOOM_STEP, ZOOM_MIN, ZOOM_MAX } from './config.js';
 import { clamp, snapMin, yToMin, addDays } from './utils.js';
 import { state, loadData, saveData, seedSample, getDisplayDates } from './store.js';
 import { applyCategoriesToCSS, buildLegend, openCatModal, closeCatModal, addNewCat, saveCatModal } from './categories.js';
 import { renderAll, openModal, closeModal, handleModalSave, recentlyResized } from './events.js';
 import { rebuildAll, buildAxis, buildDayCols } from './schedule.js';
 
-/* ── Column click handler (passed to buildDayCols) ── */
+/* ── Column click handler ── */
 function onColClick(e, div, dateStr) {
   if (recentlyResized || e.target.closest('.event-block')) return;
   const rect = div.getBoundingClientRect();
   const snap = INTERVALS[state.intervalIdx];
-  const startMin = clamp(snapMin(yToMin(e.clientY - rect.top), state.intervalIdx), START_MIN, END_MIN - snap);
+  const actualY = (e.clientY - rect.top) / state.zoomLevel;
+  const startMin = clamp(snapMin(yToMin(actualY), state.intervalIdx), START_MIN, END_MIN - snap);
   const endMin   = clamp(startMin + 60, START_MIN + snap, END_MIN);
   openModal(dateStr, startMin, endMin);
 }
@@ -35,6 +36,23 @@ function applyInterval(idx) {
 slider.addEventListener('input', () => applyInterval(+slider.value));
 ticks.forEach(s => s.addEventListener('click', () => applyInterval(+s.dataset.idx)));
 
+/* ── Zoom control ── */
+const zoomLabel   = document.getElementById('zoomLabel');
+const zoomOutBtn  = document.getElementById('zoomOutBtn');
+const zoomInBtn   = document.getElementById('zoomInBtn');
+
+function applyZoom(level) {
+  state.zoomLevel = Math.round(level * 100) / 100;
+  document.getElementById('scheduleInner').style.zoom = state.zoomLevel;
+  zoomLabel.textContent = Math.round(state.zoomLevel * 100) + '%';
+  zoomOutBtn.disabled = state.zoomLevel <= ZOOM_MIN;
+  zoomInBtn.disabled  = state.zoomLevel >= ZOOM_MAX;
+  saveData();
+}
+
+zoomOutBtn.addEventListener('click', () => applyZoom(clamp(state.zoomLevel - ZOOM_STEP, ZOOM_MIN, ZOOM_MAX)));
+zoomInBtn.addEventListener('click',  () => applyZoom(clamp(state.zoomLevel + ZOOM_STEP, ZOOM_MIN, ZOOM_MAX)));
+
 /* ── Week navigation ── */
 document.getElementById('prevWeekBtn').addEventListener('click', () => {
   state.currentWeekStart = addDays(state.currentWeekStart, -7);
@@ -53,13 +71,23 @@ document.querySelectorAll('.view-btn').forEach(btn => {
 
 /* ── Event modal listeners ── */
 document.getElementById('modalCancel').addEventListener('click', closeModal);
-document.getElementById('modalSaveBtn').addEventListener('click', handleModalSave);
+document.getElementById('modalSaveBtn').addEventListener('click', () => {
+  handleModalSave(() => renderAll(getDisplayDates()));
+});
 document.getElementById('eventName').addEventListener('keydown', e => {
   if (e.key === 'Enter')  document.getElementById('modalSaveBtn').click();
   if (e.key === 'Escape') closeModal();
 });
 document.getElementById('modalOverlay').addEventListener('click', e => {
   if (e.target === document.getElementById('modalOverlay')) closeModal();
+});
+
+/* ── Recurrence select listener ── */
+document.getElementById('eventRecur').addEventListener('change', () => {
+  const val = document.getElementById('eventRecur').value;
+  const showOptions = val !== 'none';
+  document.getElementById('recurEndRow').style.display      = showOptions ? '' : 'none';
+  document.getElementById('recurWeekdaysRow').style.display = val === 'weekly' ? '' : 'none';
 });
 
 /* ── Category modal listeners ── */
@@ -84,4 +112,5 @@ seedSample();
 applyCategoriesToCSS();
 buildLegend();
 applyInterval(state.intervalIdx);
+applyZoom(state.zoomLevel);
 rebuildAll(onColClick);
