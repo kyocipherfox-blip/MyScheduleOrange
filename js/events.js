@@ -171,23 +171,16 @@ export function openModal(dateStr, defaultStart, defaultEnd, editId = null) {
   document.getElementById('eventEnd').value   = minToTimeStr(ev ? ev.endMin   : defaultEnd);
   document.getElementById('modalSaveBtn').textContent = editId ? '保存' : '追加';
 
-  // 繰り返しセクション：新規追加時のみ表示
-  const recurSection = document.getElementById('recurSection');
-  if (editId) {
-    recurSection.style.display = 'none';
-  } else {
-    recurSection.style.display = '';
-    document.getElementById('eventRecur').value = 'none';
-    document.getElementById('recurEndRow').style.display = 'none';
-    document.getElementById('recurWeekdaysRow').style.display = 'none';
-    // デフォルト終了日：1ヶ月後
-    const oneMonthLater = addDays(d, 30);
-    document.getElementById('recurEndDate').value = dateToStr(oneMonthLater);
-    // 毎週のデフォルト曜日：クリックした日
-    document.querySelectorAll('input[name="recurDay"]').forEach(cb => {
-      cb.checked = String(d.getDay()) === cb.value;
-    });
-  }
+  // 繰り返しセクション：常時表示。「なし」で初期化
+  document.getElementById('eventRecur').value = 'none';
+  document.getElementById('recurEndRow').style.display = 'none';
+  document.getElementById('recurWeekdaysRow').style.display = 'none';
+  // デフォルト終了日：1ヶ月後
+  document.getElementById('recurEndDate').value = dateToStr(addDays(d, 30));
+  // 毎週のデフォルト曜日：対象日の曜日
+  document.querySelectorAll('input[name="recurDay"]').forEach(cb => {
+    cb.checked = String(d.getDay()) === cb.value;
+  });
 
   document.getElementById('modalOverlay').classList.add('active');
   document.getElementById('eventName').focus();
@@ -206,38 +199,45 @@ export function handleModalSave(onSaved) {
   if (!name) { document.getElementById('eventName').focus(); return; }
   if (end <= start) { alert('終了時間は開始時間より後にしてください'); return; }
 
-  if (modalState.editId) {
+  const recur = document.getElementById('eventRecur').value;
+
+  if (recur !== 'none') {
+    // 繰り返し設定あり：バリデーション → 元イベント削除 → 新シリーズ生成
+    const endDateStr = document.getElementById('recurEndDate').value;
+    if (!endDateStr) { alert('繰り返し終了日を入力してください'); return; }
+    if (endDateStr < modalState.dateStr) { alert('終了日は開始日以降を指定してください'); return; }
+
+    let weekdays = [];
+    if (recur === 'weekly') {
+      weekdays = [...document.querySelectorAll('input[name="recurDay"]:checked')]
+                  .map(cb => Number(cb.value));
+      if (weekdays.length === 0) { alert('繰り返す曜日を1つ以上選択してください'); return; }
+    }
+
+    // 編集中の既存イベントを削除（新規追加時は何もしない）
+    if (modalState.editId) {
+      state.events = state.events.filter(e => e.id !== modalState.editId);
+    }
+
+    const base = { date: modalState.dateStr, startMin: start, endMin: end, name, category: cat };
+    const instances = generateRecurringEvents(base, recur, endDateStr, weekdays);
+    state.events.push(...instances);
+    saveData();
+    onSaved();
+  } else if (modalState.editId) {
+    // 編集・繰り返しなし：対象1件のみ更新
     const ev = state.events.find(e => e.id === modalState.editId);
     if (ev) { ev.name = name; ev.category = cat; ev.startMin = start; ev.endMin = end; }
     saveData();
     renderCol(modalState.dateStr);
   } else {
-    const recur = document.getElementById('eventRecur').value;
-    if (recur === 'none') {
-      state.events.push({
-        id: state.nextId++, date: modalState.dateStr,
-        startMin: start, endMin: end, name, category: cat
-      });
-      saveData();
-      renderCol(modalState.dateStr);
-    } else {
-      const endDateStr = document.getElementById('recurEndDate').value;
-      if (!endDateStr) { alert('繰り返し終了日を入力してください'); return; }
-      if (endDateStr < modalState.dateStr) { alert('終了日は開始日以降を指定してください'); return; }
-
-      let weekdays = [];
-      if (recur === 'weekly') {
-        weekdays = [...document.querySelectorAll('input[name="recurDay"]:checked')]
-                    .map(cb => Number(cb.value));
-        if (weekdays.length === 0) { alert('繰り返す曜日を1つ以上選択してください'); return; }
-      }
-
-      const base = { date: modalState.dateStr, startMin: start, endMin: end, name, category: cat };
-      const instances = generateRecurringEvents(base, recur, endDateStr, weekdays);
-      state.events.push(...instances);
-      saveData();
-      onSaved();
-    }
+    // 新規追加・繰り返しなし
+    state.events.push({
+      id: state.nextId++, date: modalState.dateStr,
+      startMin: start, endMin: end, name, category: cat
+    });
+    saveData();
+    renderCol(modalState.dateStr);
   }
   closeModal();
 }
