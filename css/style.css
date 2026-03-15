@@ -1,0 +1,204 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+  background: #f0f2f5; color: #333; padding: 20px;
+}
+body.dragging { user-select: none; cursor: ns-resize; }
+
+h1 { text-align: center; font-size: 1.5rem; margin-bottom: 14px; color: #2c3e50; }
+
+/* ── Navigation bar ── */
+.nav-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 10px; margin-bottom: 14px;
+}
+.week-nav { display: flex; align-items: center; gap: 10px; }
+#weekLabel { font-size: 0.88rem; color: #444; font-weight: bold; white-space: nowrap; }
+.nav-btn {
+  padding: 5px 12px; border-radius: 6px; border: 1px solid #ccc;
+  background: #fff; cursor: pointer; font-size: 0.82rem; color: #555;
+}
+.nav-btn:hover { background: #f0f0f0; }
+.nav-right { display: flex; align-items: center; gap: 10px; }
+.view-toggle { display: flex; border: 1px solid #ccc; border-radius: 6px; overflow: hidden; }
+.view-btn {
+  padding: 5px 14px; border: none; background: #fff; cursor: pointer;
+  font-size: 0.82rem; color: #555; border-right: 1px solid #ccc;
+}
+.view-btn:last-child { border-right: none; }
+.view-btn.active { background: #4a90e2; color: #fff; }
+.view-btn:hover:not(.active) { background: #f0f0f0; }
+.cat-btn {
+  padding: 5px 14px; border-radius: 6px; border: 1px solid #ccc;
+  background: #fff; cursor: pointer; font-size: 0.82rem; color: #555;
+}
+.cat-btn:hover { background: #f0f0f0; }
+
+/* ── Interval slider ── */
+.interval-control {
+  display: flex; align-items: center; justify-content: center;
+  gap: 16px; margin-bottom: 16px; user-select: none;
+}
+.interval-label { font-size: 0.85rem; color: #555; }
+.slider-wrap { display: flex; flex-direction: column; width: 240px; }
+#intervalSlider {
+  width: 100%; -webkit-appearance: none; appearance: none;
+  height: 6px; border-radius: 3px; outline: none; cursor: grab;
+  background: linear-gradient(to right, #4a90e2 var(--fill,50%), #ddd var(--fill,50%));
+}
+#intervalSlider::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
+  background: #fff; border: 3px solid #4a90e2;
+  box-shadow: 0 2px 6px rgba(74,144,226,.4); cursor: grab;
+}
+#intervalSlider::-moz-range-thumb {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: #fff; border: 3px solid #4a90e2; cursor: grab;
+}
+.slider-ticks { display: flex; justify-content: space-between; padding: 4px 1px 0; }
+.slider-ticks span { font-size: 0.7rem; color: #aaa; cursor: pointer; }
+.slider-ticks span.active { color: #4a90e2; font-weight: bold; }
+.interval-badge {
+  font-size: 0.82rem; font-weight: bold; color: #fff;
+  background: #4a90e2; padding: 4px 14px; border-radius: 12px; white-space: nowrap;
+}
+
+/* ── Schedule layout ── */
+.table-wrapper {
+  overflow-x: auto; border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.1); background: #fff;
+}
+.schedule-inner { min-width: 720px; }
+.schedule-header {
+  display: grid;
+  position: sticky; top: 0; z-index: 20;
+  border-bottom: 2px solid #ddd; background: #fff;
+}
+.col-header { padding: 10px 6px; text-align: center; font-size: 0.82rem; font-weight: bold; }
+.col-header.time-col { background: #f8f9fa; color: #888; }
+.col-header.mon,.col-header.tue,.col-header.wed,
+.col-header.thu,.col-header.fri { background: #eaf0fb; color: #2255a4; }
+.col-header.sat { background: #e8f4fd; color: #1a78c2; }
+.col-header.sun { background: #fdecea; color: #c0392b; }
+.day-name { display: block; font-size: 0.95rem; }
+.day-date { display: block; font-size: 0.72rem; font-weight: normal; opacity: .8; }
+
+.schedule-body { display: flex; }
+.time-axis {
+  position: relative; width: 70px; flex-shrink: 0;
+  background: #f8f9fa; border-right: 2px solid #ddd;
+}
+.time-label {
+  position: absolute; right: 6px; font-size: 0.68rem; color: #bbb;
+  transform: translateY(-50%); white-space: nowrap; pointer-events: none;
+}
+.time-label.hour { color: #888; font-weight: bold; font-size: 0.75rem; }
+
+.days-wrapper { display: flex; flex: 1; }
+.day-col {
+  flex: 1; position: relative; border-right: 1px solid #e0e0e0;
+  cursor: crosshair; min-width: 70px;
+}
+.day-col:last-child { border-right: none; }
+
+/* ── Event blocks (colors via dynamic-cat-css) ── */
+.event-block {
+  position: absolute; left: 2px; right: 2px; border-radius: 5px;
+  overflow: hidden; display: flex; flex-direction: column;
+  box-shadow: 0 1px 4px rgba(0,0,0,.12); z-index: 2; min-height: 16px;
+  transition: box-shadow .15s;
+}
+.event-block:hover { box-shadow: 0 2px 10px rgba(0,0,0,.22); z-index: 3; }
+.event-content {
+  flex: 1; padding: 3px 18px 3px 5px; overflow: hidden;
+  display: flex; flex-direction: column; justify-content: center;
+}
+.event-name {
+  font-size: 0.72rem; font-weight: 700;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.event-time-label { font-size: 0.62rem; opacity: .75; white-space: nowrap; }
+.event-del {
+  position: absolute; top: 2px; right: 2px; width: 14px; height: 14px;
+  border-radius: 50%; background: rgba(0,0,0,.2); color: #fff;
+  border: none; font-size: 9px; line-height: 14px; text-align: center;
+  cursor: pointer; padding: 0; display: none; z-index: 4;
+}
+.event-block:hover .event-del { display: block; }
+.resize-handle {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 8px;
+  cursor: ns-resize; z-index: 4; background: rgba(0,0,0,.07);
+  border-radius: 0 0 4px 4px;
+}
+.resize-handle::after {
+  content: ''; display: block; width: 20px; height: 2px; margin: 3px auto;
+  background: rgba(0,0,0,.25); border-radius: 1px;
+}
+.resize-handle:hover { background: rgba(0,0,0,.18); }
+
+/* ── Legend ── */
+.legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; justify-content: center; }
+.legend-badge {
+  display: inline-block; padding: 3px 12px; border-radius: 5px;
+  font-size: 0.75rem; font-weight: 600;
+}
+
+/* ── Modals (shared) ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.4); z-index: 100; align-items: center; justify-content: center;
+}
+.modal-overlay.active { display: flex; }
+.modal {
+  background: #fff; border-radius: 12px; padding: 26px 30px;
+  width: 360px; box-shadow: 0 8px 32px rgba(0,0,0,.2);
+  max-height: 90vh; overflow-y: auto;
+}
+.modal.modal-wide { width: 460px; }
+.modal h2 { font-size: 1rem; color: #2c3e50; margin-bottom: 16px; }
+.modal label { display: block; font-size: 0.78rem; color: #555; margin: 12px 0 3px; }
+.modal input[type="text"], .modal input[type="time"], .modal select {
+  width: 100%; padding: 8px 10px; border: 1px solid #ccc;
+  border-radius: 6px; font-size: 0.88rem; background: #fff; outline: none;
+}
+.modal input:focus { border-color: #4a90e2; }
+.time-row { display: flex; gap: 10px; }
+.time-row > div { flex: 1; }
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+.btn {
+  padding: 8px 20px; border-radius: 6px; border: none;
+  font-size: 0.85rem; cursor: pointer; font-weight: 600;
+}
+.btn-primary { background: #4a90e2; color: #fff; }
+.btn-primary:hover { background: #357abd; }
+.btn-cancel  { background: #eee; color: #555; }
+.btn-cancel:hover { background: #ddd; }
+
+/* ── Category modal ── */
+.cat-list { max-height: 320px; overflow-y: auto; }
+.cat-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0; border-bottom: 1px solid #f0f0f0;
+}
+.cat-row:last-child { border-bottom: none; }
+.cat-swatch {
+  width: 36px; height: 36px; border-radius: 8px; border: 1px solid #ccc;
+  cursor: pointer; padding: 2px; flex-shrink: 0;
+}
+.cat-name-input {
+  flex: 1; padding: 7px 10px; border: 1px solid #ccc;
+  border-radius: 6px; font-size: 0.85rem; outline: none;
+}
+.cat-name-input:focus { border-color: #4a90e2; }
+.cat-del-btn {
+  padding: 5px 10px; border-radius: 6px; border: 1px solid #f87171;
+  background: #fff; color: #ef4444; font-size: 0.78rem;
+  cursor: pointer; white-space: nowrap; flex-shrink: 0;
+}
+.cat-del-btn:hover { background: #fef2f2; }
+.btn-add-cat {
+  display: block; width: 100%; margin-top: 12px; padding: 8px;
+  border: 2px dashed #ccc; border-radius: 8px; background: #fff;
+  color: #888; font-size: 0.85rem; cursor: pointer;
+}
+.btn-add-cat:hover { border-color: #4a90e2; color: #4a90e2; background: #f0f7ff; }
