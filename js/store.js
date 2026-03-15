@@ -8,7 +8,8 @@ export const state = {
   viewMode: 1,
   currentWeekStart: getMondayOf(new Date()),
   categories: DEFAULT_CATS.map(c => ({ ...c, ...generateCatColors(c.accent) })),
-  zoomLevel: 1.0
+  zoomLevel: 1.0,
+  controlsCollapsed: false
 };
 
 export function getDisplayDates() {
@@ -24,7 +25,8 @@ export function loadData() {
     state.nextId      = d.nextId      || 1;
     state.intervalIdx = d.intervalIdx ?? 1;
     state.viewMode    = d.viewMode    || 1;
-    state.zoomLevel   = d.zoomLevel   ?? 1.0;
+    state.zoomLevel         = d.zoomLevel         ?? 1.0;
+    state.controlsCollapsed = d.controlsCollapsed ?? false;
     if (d.currentWeekStart) state.currentWeekStart = strToDate(d.currentWeekStart);
     if (d.categories?.length) state.categories = d.categories;
   } catch {}
@@ -38,7 +40,8 @@ export function saveData() {
     viewMode:         state.viewMode,
     currentWeekStart: dateToStr(state.currentWeekStart),
     categories:       state.categories,
-    zoomLevel:        state.zoomLevel
+    zoomLevel:          state.zoomLevel,
+    controlsCollapsed:  state.controlsCollapsed
   }));
 }
 

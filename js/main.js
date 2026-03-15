@@ -37,6 +37,19 @@ function applyInterval(idx) {
 slider.addEventListener('input', () => applyInterval(+slider.value));
 ticks.forEach(s => s.addEventListener('click', () => applyInterval(+s.dataset.idx)));
 
+/* ── Controls toggle ── */
+const controlToggleBtn  = document.getElementById('controlToggleBtn');
+const intervalControlEl = document.getElementById('intervalControl');
+
+function applyControlsCollapsed(collapsed) {
+  state.controlsCollapsed = collapsed;
+  intervalControlEl.classList.toggle('collapsed', collapsed);
+  controlToggleBtn.textContent = collapsed ? '▲ コントロール' : '▼ コントロール';
+  saveData();
+}
+
+controlToggleBtn.addEventListener('click', () => applyControlsCollapsed(!state.controlsCollapsed));
+
 /* ── Zoom control ── */
 const zoomLabel  = document.getElementById('zoomLabel');
 const zoomOutBtn = document.getElementById('zoomOutBtn');
@@ -128,4 +141,5 @@ applyCategoriesToCSS();
 buildLegend();
 applyInterval(state.intervalIdx);
 applyZoom(state.zoomLevel);
+applyControlsCollapsed(state.controlsCollapsed);
 rebuildAll(onColClick);
