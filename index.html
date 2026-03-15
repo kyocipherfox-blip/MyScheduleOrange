@@ -12,32 +12,58 @@
     }
     body.dragging { user-select: none; cursor: ns-resize; }
 
-    h1 { text-align: center; font-size: 1.5rem; margin-bottom: 12px; color: #2c3e50; }
-    .week-label { text-align: center; font-size: 0.9rem; color: #666; margin-bottom: 14px; }
+    h1 { text-align: center; font-size: 1.5rem; margin-bottom: 14px; color: #2c3e50; }
 
-    /* ── Slider ── */
+    /* ── Navigation bar ── */
+    .nav-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 10px; margin-bottom: 14px;
+    }
+    .week-nav { display: flex; align-items: center; gap: 10px; }
+    #weekLabel { font-size: 0.88rem; color: #444; font-weight: bold; white-space: nowrap; }
+    .nav-btn {
+      padding: 5px 12px; border-radius: 6px; border: 1px solid #ccc;
+      background: #fff; cursor: pointer; font-size: 0.82rem; color: #555;
+    }
+    .nav-btn:hover { background: #f0f0f0; }
+    .nav-right { display: flex; align-items: center; gap: 10px; }
+    .view-toggle { display: flex; border: 1px solid #ccc; border-radius: 6px; overflow: hidden; }
+    .view-btn {
+      padding: 5px 14px; border: none; background: #fff; cursor: pointer;
+      font-size: 0.82rem; color: #555; border-right: 1px solid #ccc;
+    }
+    .view-btn:last-child { border-right: none; }
+    .view-btn.active { background: #4a90e2; color: #fff; }
+    .view-btn:hover:not(.active) { background: #f0f0f0; }
+    .cat-btn {
+      padding: 5px 14px; border-radius: 6px; border: 1px solid #ccc;
+      background: #fff; cursor: pointer; font-size: 0.82rem; color: #555;
+    }
+    .cat-btn:hover { background: #f0f0f0; }
+
+    /* ── Interval slider ── */
     .interval-control {
       display: flex; align-items: center; justify-content: center;
-      gap: 16px; margin-bottom: 20px; user-select: none;
+      gap: 16px; margin-bottom: 16px; user-select: none;
     }
     .interval-label { font-size: 0.85rem; color: #555; }
-    .slider-wrap { display: flex; flex-direction: column; width: 260px; }
+    .slider-wrap { display: flex; flex-direction: column; width: 240px; }
     #intervalSlider {
       width: 100%; -webkit-appearance: none; appearance: none;
       height: 6px; border-radius: 3px; outline: none; cursor: grab;
       background: linear-gradient(to right, #4a90e2 var(--fill,50%), #ddd var(--fill,50%));
     }
     #intervalSlider::-webkit-slider-thumb {
-      -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%;
+      -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
       background: #fff; border: 3px solid #4a90e2;
       box-shadow: 0 2px 6px rgba(74,144,226,.4); cursor: grab;
     }
     #intervalSlider::-moz-range-thumb {
-      width: 22px; height: 22px; border-radius: 50%;
+      width: 20px; height: 20px; border-radius: 50%;
       background: #fff; border: 3px solid #4a90e2; cursor: grab;
     }
-    .slider-ticks { display: flex; justify-content: space-between; padding: 4px 2px 0; }
-    .slider-ticks span { font-size: 0.72rem; color: #aaa; cursor: pointer; }
+    .slider-ticks { display: flex; justify-content: space-between; padding: 4px 1px 0; }
+    .slider-ticks span { font-size: 0.7rem; color: #aaa; cursor: pointer; }
     .slider-ticks span.active { color: #4a90e2; font-weight: bold; }
     .interval-badge {
       font-size: 0.82rem; font-weight: bold; color: #fff;
@@ -50,9 +76,8 @@
       box-shadow: 0 4px 16px rgba(0,0,0,.1); background: #fff;
     }
     .schedule-inner { min-width: 720px; }
-
     .schedule-header {
-      display: grid; grid-template-columns: 70px repeat(7,1fr);
+      display: grid;
       position: sticky; top: 0; z-index: 20;
       border-bottom: 2px solid #ddd; background: #fff;
     }
@@ -66,8 +91,6 @@
     .day-date { display: block; font-size: 0.72rem; font-weight: normal; opacity: .8; }
 
     .schedule-body { display: flex; }
-
-    /* Time axis */
     .time-axis {
       position: relative; width: 70px; flex-shrink: 0;
       background: #f8f9fa; border-right: 2px solid #ddd;
@@ -78,15 +101,14 @@
     }
     .time-label.hour { color: #888; font-weight: bold; font-size: 0.75rem; }
 
-    /* Day columns */
     .days-wrapper { display: flex; flex: 1; }
     .day-col {
       flex: 1; position: relative; border-right: 1px solid #e0e0e0;
-      cursor: crosshair; min-width: 80px;
+      cursor: crosshair; min-width: 70px;
     }
     .day-col:last-child { border-right: none; }
 
-    /* Events */
+    /* ── Event blocks (colors via dynamic-cat-css) ── */
     .event-block {
       position: absolute; left: 2px; right: 2px; border-radius: 5px;
       overflow: hidden; display: flex; flex-direction: column;
@@ -94,11 +116,6 @@
       transition: box-shadow .15s;
     }
     .event-block:hover { box-shadow: 0 2px 10px rgba(0,0,0,.22); z-index: 3; }
-    .event-block.work     { background: #dbeafe; color: #1e40af; border: 1.5px solid #93c5fd; }
-    .event-block.meal     { background: #ffedd5; color: #9a3412; border: 1.5px solid #fdba74; }
-    .event-block.exercise { background: #dcfce7; color: #166534; border: 1.5px solid #86efac; }
-    .event-block.leisure  { background: #ede9fe; color: #5b21b6; border: 1.5px solid #c4b5fd; }
-
     .event-content {
       flex: 1; padding: 3px 18px 3px 5px; overflow: hidden;
       display: flex; flex-direction: column; justify-content: center;
@@ -108,7 +125,6 @@
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .event-time-label { font-size: 0.62rem; opacity: .75; white-space: nowrap; }
-
     .event-del {
       position: absolute; top: 2px; right: 2px; width: 14px; height: 14px;
       border-radius: 50%; background: rgba(0,0,0,.2); color: #fff;
@@ -116,7 +132,6 @@
       cursor: pointer; padding: 0; display: none; z-index: 4;
     }
     .event-block:hover .event-del { display: block; }
-
     .resize-handle {
       position: absolute; bottom: 0; left: 0; right: 0; height: 8px;
       cursor: ns-resize; z-index: 4; background: rgba(0,0,0,.07);
@@ -128,15 +143,14 @@
     }
     .resize-handle:hover { background: rgba(0,0,0,.18); }
 
-    /* Legend */
-    .legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 18px; justify-content: center; }
-    .legend-badge { display: inline-block; padding: 3px 12px; border-radius: 5px; font-size: 0.75rem; font-weight: 600; }
-    .legend-badge.work     { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
-    .legend-badge.meal     { background: #ffedd5; color: #9a3412; border: 1px solid #fdba74; }
-    .legend-badge.exercise { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
-    .legend-badge.leisure  { background: #ede9fe; color: #5b21b6; border: 1px solid #c4b5fd; }
+    /* ── Legend ── */
+    .legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; justify-content: center; }
+    .legend-badge {
+      display: inline-block; padding: 3px 12px; border-radius: 5px;
+      font-size: 0.75rem; font-weight: 600;
+    }
 
-    /* Modal */
+    /* ── Modals (shared) ── */
     .modal-overlay {
       display: none; position: fixed; inset: 0;
       background: rgba(0,0,0,.4); z-index: 100; align-items: center; justify-content: center;
@@ -145,7 +159,9 @@
     .modal {
       background: #fff; border-radius: 12px; padding: 26px 30px;
       width: 360px; box-shadow: 0 8px 32px rgba(0,0,0,.2);
+      max-height: 90vh; overflow-y: auto;
     }
+    .modal.modal-wide { width: 460px; }
     .modal h2 { font-size: 1rem; color: #2c3e50; margin-bottom: 16px; }
     .modal label { display: block; font-size: 0.78rem; color: #555; margin: 12px 0 3px; }
     .modal input[type="text"], .modal input[type="time"], .modal select {
@@ -156,17 +172,64 @@
     .time-row { display: flex; gap: 10px; }
     .time-row > div { flex: 1; }
     .modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
-    .btn { padding: 8px 20px; border-radius: 6px; border: none; font-size: 0.85rem; cursor: pointer; font-weight: 600; }
+    .btn {
+      padding: 8px 20px; border-radius: 6px; border: none;
+      font-size: 0.85rem; cursor: pointer; font-weight: 600;
+    }
     .btn-primary { background: #4a90e2; color: #fff; }
     .btn-primary:hover { background: #357abd; }
-    .btn-cancel { background: #eee; color: #555; }
+    .btn-cancel  { background: #eee; color: #555; }
     .btn-cancel:hover { background: #ddd; }
+
+    /* ── Category modal ── */
+    .cat-list { max-height: 320px; overflow-y: auto; }
+    .cat-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 0; border-bottom: 1px solid #f0f0f0;
+    }
+    .cat-row:last-child { border-bottom: none; }
+    .cat-swatch {
+      width: 36px; height: 36px; border-radius: 8px; border: 1px solid #ccc;
+      cursor: pointer; padding: 2px; flex-shrink: 0;
+    }
+    .cat-name-input {
+      flex: 1; padding: 7px 10px; border: 1px solid #ccc;
+      border-radius: 6px; font-size: 0.85rem; outline: none;
+    }
+    .cat-name-input:focus { border-color: #4a90e2; }
+    .cat-del-btn {
+      padding: 5px 10px; border-radius: 6px; border: 1px solid #f87171;
+      background: #fff; color: #ef4444; font-size: 0.78rem;
+      cursor: pointer; white-space: nowrap; flex-shrink: 0;
+    }
+    .cat-del-btn:hover { background: #fef2f2; }
+    .btn-add-cat {
+      display: block; width: 100%; margin-top: 12px; padding: 8px;
+      border: 2px dashed #ccc; border-radius: 8px; background: #fff;
+      color: #888; font-size: 0.85rem; cursor: pointer;
+    }
+    .btn-add-cat:hover { border-color: #4a90e2; color: #4a90e2; background: #f0f7ff; }
   </style>
+  <style id="dynamic-cat-css"></style>
 </head>
 <body>
 
 <h1>週間スケジュール表</h1>
-<div class="week-label">2026年3月16日（月）〜 3月22日（日）</div>
+
+<div class="nav-bar">
+  <div class="week-nav">
+    <button class="nav-btn" id="prevWeekBtn">◀ 前週</button>
+    <span id="weekLabel"></span>
+    <button class="nav-btn" id="nextWeekBtn">次週 ▶</button>
+  </div>
+  <div class="nav-right">
+    <div class="view-toggle">
+      <button class="view-btn" data-weeks="1">1週間</button>
+      <button class="view-btn" data-weeks="2">2週間</button>
+    </div>
+    <button class="cat-btn" id="catSettingsBtn">⚙ カテゴリ</button>
+  </div>
+</div>
 
 <div class="interval-control">
   <span class="interval-label">時間間隔</span>
@@ -183,17 +246,8 @@
 </div>
 
 <div class="table-wrapper">
-  <div class="schedule-inner">
-    <div class="schedule-header">
-      <div class="col-header time-col">時間</div>
-      <div class="col-header mon"><span class="day-name">月</span><span class="day-date">3/16</span></div>
-      <div class="col-header tue"><span class="day-name">火</span><span class="day-date">3/17</span></div>
-      <div class="col-header wed"><span class="day-name">水</span><span class="day-date">3/18</span></div>
-      <div class="col-header thu"><span class="day-name">木</span><span class="day-date">3/19</span></div>
-      <div class="col-header fri"><span class="day-name">金</span><span class="day-date">3/20</span></div>
-      <div class="col-header sat"><span class="day-name">土</span><span class="day-date">3/21</span></div>
-      <div class="col-header sun"><span class="day-name">日</span><span class="day-date">3/22</span></div>
-    </div>
+  <div class="schedule-inner" id="scheduleInner">
+    <div class="schedule-header" id="scheduleHeader"></div>
     <div class="schedule-body">
       <div class="time-axis" id="timeAxis"></div>
       <div class="days-wrapper" id="daysWrapper"></div>
@@ -201,38 +255,36 @@
   </div>
 </div>
 
-<div class="legend">
-  <span class="legend-badge work">仕事・通勤</span>
-  <span class="legend-badge meal">食事</span>
-  <span class="legend-badge exercise">運動</span>
-  <span class="legend-badge leisure">レジャー・趣味</span>
-</div>
+<div class="legend" id="legend"></div>
 
+<!-- Event modal -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <h2 id="modalTitle">予定を追加</h2>
     <label>予定名</label>
     <input type="text" id="eventName" placeholder="例：会議、ランチ…" maxlength="24">
     <label>カテゴリ</label>
-    <select id="eventCategory">
-      <option value="work">仕事・通勤</option>
-      <option value="meal">食事</option>
-      <option value="exercise">運動</option>
-      <option value="leisure">レジャー・趣味</option>
-    </select>
+    <select id="eventCategory"></select>
     <div class="time-row" style="margin-top:12px">
-      <div>
-        <label>開始時間</label>
-        <input type="time" id="eventStart" step="900">
-      </div>
-      <div>
-        <label>終了時間</label>
-        <input type="time" id="eventEnd" step="900">
-      </div>
+      <div><label>開始時間</label><input type="time" id="eventStart" step="900"></div>
+      <div><label>終了時間</label><input type="time" id="eventEnd"   step="900"></div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-cancel" id="modalCancel">キャンセル</button>
-      <button class="btn btn-primary" id="modalAdd">追加</button>
+      <button class="btn btn-primary" id="modalSaveBtn">追加</button>
+    </div>
+  </div>
+</div>
+
+<!-- Category modal -->
+<div class="modal-overlay" id="catModalOverlay">
+  <div class="modal modal-wide">
+    <h2>カテゴリ管理</h2>
+    <div class="cat-list" id="catList"></div>
+    <button class="btn-add-cat" id="addCatBtn">＋ カテゴリを追加</button>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" id="catModalCancel">閉じる</button>
+      <button class="btn btn-primary" id="catModalSave">保存</button>
     </div>
   </div>
 </div>
@@ -245,11 +297,63 @@
   const TOTAL_H    = (END_MIN - START_MIN) * PX_PER_MIN;
   const INTERVALS  = [15, 30, 60, 120];
   const INT_LABELS = ['15分', '30分', '1時間', '2時間'];
-  const DAY_NAMES  = ['月','火','水','木','金','土','日'];
-  const STORE_KEY  = 'schedule_v4';
-  const SEED_KEY   = 'schedule_seeded_v4';
+  const DAY_JP     = ['日','月','火','水','木','金','土'];
+  const DAY_CLASS  = ['sun','mon','tue','wed','thu','fri','sat'];
+  const STORE_KEY  = 'schedule_v5';
+  const SEED_KEY   = 'schedule_seeded_v5';
 
-  let events = [], nextId = 1, intervalIdx = 2;
+  const DEFAULT_CATS = [
+    { id:'work',     name:'仕事・通勤',    accent:'#3b82f6' },
+    { id:'meal',     name:'食事',          accent:'#f97316' },
+    { id:'exercise', name:'運動',          accent:'#22c55e' },
+    { id:'leisure',  name:'レジャー・趣味', accent:'#a855f7' }
+  ];
+
+  /* ── State ── */
+  let events = [], nextId = 1, intervalIdx = 2, viewMode = 1;
+  let currentWeekStart = getMondayOf(new Date());
+  let categories = DEFAULT_CATS.map(c => ({ ...c, ...generateCatColors(c.accent) }));
+
+  /* ── Color utilities ── */
+  function hexToRgb(hex) {
+    return [parseInt(hex.slice(1,3),16), parseInt(hex.slice(3,5),16), parseInt(hex.slice(5,7),16)];
+  }
+  function rgbToHex(r,g,b) {
+    return '#' + [r,g,b].map(x =>
+      Math.round(Math.max(0,Math.min(255,x))).toString(16).padStart(2,'0')
+    ).join('');
+  }
+  function generateCatColors(accent) {
+    const [r,g,b] = hexToRgb(accent);
+    return {
+      bg:     rgbToHex(r*0.18+255*0.82, g*0.18+255*0.82, b*0.18+255*0.82),
+      border: rgbToHex(r*0.55+255*0.45, g*0.55+255*0.45, b*0.55+255*0.45),
+      color:  rgbToHex(r*0.48, g*0.48, b*0.48)
+    };
+  }
+
+  /* ── Date utilities ── */
+  function getMondayOf(date) {
+    const d = new Date(date); d.setHours(0,0,0,0);
+    const dow = d.getDay();
+    d.setDate(d.getDate() - (dow === 0 ? 6 : dow - 1));
+    return d;
+  }
+  function dateToStr(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+  function strToDate(s) {
+    const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d);
+  }
+  function addDays(date, n) {
+    const d = new Date(date); d.setDate(d.getDate() + n); return d;
+  }
+  function getDisplayDates() {
+    return Array.from({ length: 7 * viewMode }, (_, i) => addDays(currentWeekStart, i));
+  }
+  function fmtDateShort(d) {
+    return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
+  }
 
   /* ── Storage ── */
   function loadData() {
@@ -258,82 +362,113 @@
       events      = d.events      || [];
       nextId      = d.nextId      || 1;
       intervalIdx = d.intervalIdx ?? 2;
-    } catch { events = []; nextId = 1; intervalIdx = 2; }
+      viewMode    = d.viewMode    || 1;
+      if (d.currentWeekStart) currentWeekStart = strToDate(d.currentWeekStart);
+      if (d.categories?.length) categories = d.categories;
+    } catch {}
   }
-
   function saveData() {
-    localStorage.setItem(STORE_KEY, JSON.stringify({ events, nextId, intervalIdx }));
+    localStorage.setItem(STORE_KEY, JSON.stringify({
+      events, nextId, intervalIdx, viewMode,
+      currentWeekStart: dateToStr(currentWeekStart),
+      categories
+    }));
   }
 
-  /* ── Sample data ── */
+  /* ── Seed sample data ── */
   function seedSample() {
     if (localStorage.getItem(SEED_KEY)) return;
-    const add = (col, sh, sm, eh, em, name, cat) =>
-      events.push({ id: nextId++, col, startMin: sh*60+sm, endMin: eh*60+em, name, category: cat });
-
-    // 月
+    const mon = getMondayOf(new Date());
+    const add = (off, sh, sm, eh, em, name, cat) =>
+      events.push({ id: nextId++, date: dateToStr(addDays(mon, off)),
+                    startMin: sh*60+sm, endMin: eh*60+em, name, category: cat });
     add(0, 7,0, 8,0,'朝食','meal');        add(0, 8,0, 9,0,'通勤','work');
     add(0, 9,0,10,0,'朝礼・メール','work'); add(0,10,0,12,0,'開発作業','work');
     add(0,12,0,13,0,'ランチ','meal');       add(0,13,0,14,0,'定例MTG','work');
     add(0,14,0,18,0,'開発作業','work');     add(0,18,0,19,0,'退勤','work');
     add(0,19,0,20,0,'夕食','meal');         add(0,20,0,21,0,'ジム','exercise');
-    // 火
-    add(1, 7,0, 8,0,'朝食','meal');        add(1, 8,0, 9,0,'通勤','work');
+    add(1, 7,0, 8,0,'朝食','meal');         add(1, 8,0, 9,0,'通勤','work');
     add(1, 9,0,12,0,'開発作業','work');     add(1,12,0,13,0,'ランチ','meal');
     add(1,13,0,15,0,'設計レビュー','work'); add(1,15,0,18,0,'テスト','work');
     add(1,18,0,19,0,'退勤','work');         add(1,19,0,20,0,'夕食','meal');
     add(1,21,0,22,0,'読書','leisure');
-    // 水
-    add(2, 7,0, 8,0,'朝食','meal');        add(2, 8,0, 9,0,'通勤','work');
+    add(2, 7,0, 8,0,'朝食','meal');         add(2, 8,0, 9,0,'通勤','work');
     add(2, 9,0,10,0,'会議','work');         add(2,10,0,12,0,'開発作業','work');
     add(2,12,0,13,0,'ランチ','meal');       add(2,13,0,15,0,'開発作業','work');
     add(2,15,0,18,0,'テスト','work');       add(2,18,0,19,0,'退勤','work');
     add(2,19,0,20,0,'夕食','meal');         add(2,20,0,21,0,'ジム','exercise');
-    // 木
-    add(3, 7,0, 8,0,'朝食','meal');        add(3, 8,0, 9,0,'通勤','work');
+    add(3, 7,0, 8,0,'朝食','meal');         add(3, 8,0, 9,0,'通勤','work');
     add(3, 9,0,12,0,'開発作業','work');     add(3,12,0,13,0,'ランチ','meal');
     add(3,13,0,14,0,'1on1','work');         add(3,14,0,18,0,'開発作業','work');
     add(3,18,0,19,0,'退勤','work');         add(3,19,0,20,0,'夕食','meal');
     add(3,21,0,22,0,'読書','leisure');
-    // 金
-    add(4, 7,0, 8,0,'朝食','meal');        add(4, 8,0, 9,0,'通勤','work');
+    add(4, 7,0, 8,0,'朝食','meal');         add(4, 8,0, 9,0,'通勤','work');
     add(4, 9,0,10,0,'週次報告','work');     add(4,10,0,12,0,'開発作業','work');
     add(4,12,0,13,0,'ランチ','meal');       add(4,13,0,15,0,'開発作業','work');
     add(4,15,0,17,0,'リリース作業','work'); add(4,17,0,18,0,'まとめ・日報','work');
     add(4,18,0,19,0,'退勤','work');         add(4,19,0,20,0,'外食','meal');
     add(4,21,0,22,0,'読書','leisure');
-    // 土
-    add(5, 7,0, 8,0,'朝食','meal');        add(5, 9,0,11,0,'買い物','leisure');
+    add(5, 7,0, 8,0,'朝食','meal');         add(5, 9,0,11,0,'買い物','leisure');
     add(5,12,0,13,0,'ランチ','meal');       add(5,13,0,15,0,'映画','leisure');
     add(5,18,0,19,0,'夕食','meal');         add(5,20,0,22,0,'読書','leisure');
-    // 日
     add(6,10,0,11,0,'朝食','meal');         add(6,12,0,13,0,'ランチ','meal');
     add(6,13,0,15,0,'散歩','exercise');     add(6,18,0,19,0,'夕食','meal');
     add(6,20,0,22,0,'読書','leisure');
-
     saveData();
     localStorage.setItem(SEED_KEY, '1');
   }
 
-  /* ── Helpers ── */
+  /* ── Time helpers ── */
   function fmtTime(min) {
     return `${Math.floor(min/60)}:${String(min%60).padStart(2,'0')}`;
   }
   function minToTimeStr(min) {
     return `${String(Math.floor(min/60)).padStart(2,'0')}:${String(min%60).padStart(2,'0')}`;
   }
-  function timeStrToMin(s) {
-    const [h,m] = s.split(':').map(Number); return h*60+m;
-  }
-  function minToY(min)  { return (min - START_MIN) * PX_PER_MIN; }
-  function yToMin(y)    { return y / PX_PER_MIN + START_MIN; }
-  function snapMin(min) {
-    const s = INTERVALS[intervalIdx];
-    return Math.round(min / s) * s;
-  }
-  function clamp(v,lo,hi) { return Math.max(lo, Math.min(hi, v)); }
+  function timeStrToMin(s) { const [h,m] = s.split(':').map(Number); return h*60+m; }
+  function minToY(min)     { return (min - START_MIN) * PX_PER_MIN; }
+  function yToMin(y)       { return y / PX_PER_MIN + START_MIN; }
+  function snapMin(min)    { const s = INTERVALS[intervalIdx]; return Math.round(min/s)*s; }
+  function clamp(v,lo,hi)  { return Math.max(lo, Math.min(hi, v)); }
 
-  /* ── Build time axis ── */
+  /* ── Category CSS & UI ── */
+  function applyCategoriesToCSS() {
+    document.getElementById('dynamic-cat-css').textContent =
+      categories.map(c => [
+        `.event-block.${c.id}{background:${c.bg};color:${c.color};border:1.5px solid ${c.border};}`,
+        `.legend-badge.${c.id}{background:${c.bg};color:${c.color};border:1px solid ${c.border};}`
+      ].join('')).join('');
+  }
+  function buildLegend() {
+    document.getElementById('legend').innerHTML =
+      categories.map(c => `<span class="legend-badge ${c.id}">${c.name}</span>`).join('');
+  }
+  function buildCategorySelect(selectedId) {
+    document.getElementById('eventCategory').innerHTML =
+      categories.map(c =>
+        `<option value="${c.id}"${c.id===selectedId?' selected':''}>${c.name}</option>`
+      ).join('');
+  }
+
+  /* ── Build schedule UI ── */
+  function buildHeader(dates) {
+    const header = document.getElementById('scheduleHeader');
+    header.style.gridTemplateColumns = `70px repeat(${dates.length}, 1fr)`;
+    header.innerHTML = '<div class="col-header time-col">時間</div>';
+    dates.forEach(d => {
+      const dow = d.getDay();
+      const el = document.createElement('div');
+      el.className = `col-header ${DAY_CLASS[dow]}`;
+      el.innerHTML = `<span class="day-name">${DAY_JP[dow]}</span><span class="day-date">${d.getMonth()+1}/${d.getDate()}</span>`;
+      header.appendChild(el);
+    });
+  }
+
+  function updateWeekLabel(dates) {
+    document.getElementById('weekLabel').textContent =
+      `${fmtDateShort(dates[0])} 〜 ${fmtDateShort(dates[dates.length-1])}`;
+  }
+
   function buildAxis() {
     const axis = document.getElementById('timeAxis');
     axis.style.height = TOTAL_H + 'px';
@@ -347,37 +482,47 @@
     }
   }
 
-  /* ── Build day columns ── */
-  function buildDayCols() {
+  function buildDayCols(dates) {
     const wrapper = document.getElementById('daysWrapper');
     wrapper.innerHTML = '';
-    const slotH = INTERVALS[intervalIdx] * PX_PER_MIN;
-    const gridBg = `repeating-linear-gradient(to bottom,
-      transparent 0, transparent ${slotH - 1}px,
-      #e0e0e0 ${slotH - 1}px, #e0e0e0 ${slotH}px)`;
+    const slotH  = INTERVALS[intervalIdx] * PX_PER_MIN;
+    const gridBg = `repeating-linear-gradient(to bottom, transparent 0, transparent ${slotH-1}px, #e0e0e0 ${slotH-1}px, #e0e0e0 ${slotH}px)`;
 
-    for (let col = 0; col < 7; col++) {
+    dates.forEach(d => {
+      const dateStr = dateToStr(d);
       const div = document.createElement('div');
       div.className = 'day-col';
-      div.dataset.col = col;
+      div.dataset.date = dateStr;
       div.style.height = TOTAL_H + 'px';
       div.style.backgroundImage = gridBg;
 
       div.addEventListener('click', e => {
         if (recentlyResized || e.target.closest('.event-block')) return;
         const rect = div.getBoundingClientRect();
-        const y    = e.clientY - rect.top;
         const snap = INTERVALS[intervalIdx];
-        const startMin = clamp(snapMin(yToMin(y)), START_MIN, END_MIN - snap);
+        const startMin = clamp(snapMin(yToMin(e.clientY - rect.top)), START_MIN, END_MIN - snap);
         const endMin   = clamp(startMin + 60, START_MIN + snap, END_MIN);
-        openModal(col, startMin, endMin);
+        openModal(dateStr, startMin, endMin);
       });
 
       wrapper.appendChild(div);
-    }
+    });
+
+    document.getElementById('scheduleInner').style.minWidth = (70 + dates.length * 80) + 'px';
   }
 
-  /* ── Event elements ── */
+  function rebuildAll() {
+    const dates = getDisplayDates();
+    buildHeader(dates);
+    updateWeekLabel(dates);
+    buildAxis();
+    buildDayCols(dates);
+    renderAll(dates);
+    document.querySelectorAll('.view-btn').forEach(btn =>
+      btn.classList.toggle('active', +btn.dataset.weeks === viewMode));
+  }
+
+  /* ── Event rendering ── */
   function createEventEl(ev) {
     const el = document.createElement('div');
     el.className = `event-block ${ev.category}`;
@@ -387,15 +532,12 @@
 
     const content = document.createElement('div');
     content.className = 'event-content';
-
     const nameEl = document.createElement('span');
     nameEl.className = 'event-name';
     nameEl.textContent = ev.name;
-
     const timeEl = document.createElement('span');
     timeEl.className = 'event-time-label';
     timeEl.textContent = `${fmtTime(ev.startMin)}〜${fmtTime(ev.endMin)}`;
-
     content.append(nameEl, timeEl);
 
     const delBtn = document.createElement('button');
@@ -408,19 +550,25 @@
     handle.addEventListener('mousedown', e => startResize(e, ev.id));
 
     el.append(content, delBtn, handle);
+
+    el.addEventListener('dblclick', e => {
+      e.stopPropagation();
+      openModal(ev.date, ev.startMin, ev.endMin, ev.id);
+    });
+
     return el;
   }
 
-  function renderCol(col) {
-    const div = document.querySelector(`.day-col[data-col="${col}"]`);
+  function renderCol(dateStr) {
+    const div = document.querySelector(`.day-col[data-date="${dateStr}"]`);
     if (!div) return;
     div.querySelectorAll('.event-block').forEach(el => el.remove());
-    events.filter(ev => ev.col === col)
+    events.filter(ev => ev.date === dateStr)
           .forEach(ev => div.appendChild(createEventEl(ev)));
   }
 
-  function renderAll() {
-    for (let c = 0; c < 7; c++) renderCol(c);
+  function renderAll(dates) {
+    (dates || getDisplayDates()).forEach(d => renderCol(dateToStr(d)));
   }
 
   function deleteEvent(id) {
@@ -428,15 +576,14 @@
     if (!ev) return;
     events = events.filter(e => e.id !== id);
     saveData();
-    renderCol(ev.col);
+    renderCol(ev.date);
   }
 
   /* ── Resize drag ── */
   let drag = null, recentlyResized = false;
 
   function startResize(e, id) {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
     const ev = events.find(e => e.id === id);
     if (!ev) return;
     drag = { id, startY: e.clientY, origEnd: ev.endMin, newEnd: null };
@@ -449,11 +596,9 @@
     if (!drag) return;
     const ev = events.find(e => e.id === drag.id);
     if (!ev) return;
-    const snap   = INTERVALS[intervalIdx];
-    const deltaMin = (e.clientY - drag.startY) / PX_PER_MIN;
-    const newEnd = clamp(snapMin(drag.origEnd + deltaMin), ev.startMin + snap, END_MIN);
+    const snap = INTERVALS[intervalIdx];
+    const newEnd = clamp(snapMin(drag.origEnd + (e.clientY - drag.startY) / PX_PER_MIN), ev.startMin + snap, END_MIN);
     drag.newEnd = newEnd;
-
     const el = document.querySelector(`.event-block[data-id="${drag.id}"]`);
     if (el) {
       el.style.height = Math.max(16, (newEnd - ev.startMin) * PX_PER_MIN) + 'px';
@@ -465,7 +610,7 @@
   function onResizeUp() {
     if (drag?.newEnd != null) {
       const ev = events.find(e => e.id === drag.id);
-      if (ev) { ev.endMin = drag.newEnd; saveData(); renderCol(ev.col); }
+      if (ev) { ev.endMin = drag.newEnd; saveData(); renderCol(ev.date); }
     }
     drag = null;
     recentlyResized = true;
@@ -475,16 +620,21 @@
     document.removeEventListener('mouseup',   onResizeUp);
   }
 
-  /* ── Modal ── */
+  /* ── Event modal ── */
   let modalState = null;
 
-  function openModal(col, defaultStart, defaultEnd) {
-    modalState = { col };
-    document.getElementById('modalTitle').textContent = `予定を追加（${DAY_NAMES[col]}曜日）`;
-    document.getElementById('eventName').value     = '';
-    document.getElementById('eventCategory').value = 'work';
-    document.getElementById('eventStart').value    = minToTimeStr(defaultStart);
-    document.getElementById('eventEnd').value      = minToTimeStr(defaultEnd);
+  function openModal(dateStr, defaultStart, defaultEnd, editId = null) {
+    const ev = editId ? events.find(e => e.id === editId) : null;
+    modalState = { dateStr, editId };
+    const d = strToDate(dateStr);
+    const label = `${d.getMonth()+1}/${d.getDate()}（${DAY_JP[d.getDay()]}）`;
+    document.getElementById('modalTitle').textContent =
+      editId ? `予定を編集（${label}）` : `予定を追加（${label}）`;
+    document.getElementById('eventName').value = ev?.name ?? '';
+    buildCategorySelect(ev?.category ?? categories[0]?.id);
+    document.getElementById('eventStart').value = minToTimeStr(ev ? ev.startMin : defaultStart);
+    document.getElementById('eventEnd').value   = minToTimeStr(ev ? ev.endMin   : defaultEnd);
+    document.getElementById('modalSaveBtn').textContent = editId ? '保存' : '追加';
     document.getElementById('modalOverlay').classList.add('active');
     document.getElementById('eventName').focus();
   }
@@ -496,26 +646,124 @@
 
   document.getElementById('modalCancel').addEventListener('click', closeModal);
 
-  document.getElementById('modalAdd').addEventListener('click', () => {
+  document.getElementById('modalSaveBtn').addEventListener('click', () => {
     const name  = document.getElementById('eventName').value.trim();
     const cat   = document.getElementById('eventCategory').value;
     const start = timeStrToMin(document.getElementById('eventStart').value);
     const end   = timeStrToMin(document.getElementById('eventEnd').value);
     if (!name) { document.getElementById('eventName').focus(); return; }
     if (end <= start) { alert('終了時間は開始時間より後にしてください'); return; }
-    events.push({ id: nextId++, col: modalState.col, startMin: start, endMin: end, name, category: cat });
+
+    if (modalState.editId) {
+      const ev = events.find(e => e.id === modalState.editId);
+      if (ev) { ev.name = name; ev.category = cat; ev.startMin = start; ev.endMin = end; }
+    } else {
+      events.push({ id: nextId++, date: modalState.dateStr, startMin: start, endMin: end, name, category: cat });
+    }
     saveData();
-    renderCol(modalState.col);
+    renderCol(modalState.dateStr);
     closeModal();
   });
 
   document.getElementById('eventName').addEventListener('keydown', e => {
-    if (e.key === 'Enter')  document.getElementById('modalAdd').click();
+    if (e.key === 'Enter')  document.getElementById('modalSaveBtn').click();
     if (e.key === 'Escape') closeModal();
   });
 
   document.getElementById('modalOverlay').addEventListener('click', e => {
     if (e.target === document.getElementById('modalOverlay')) closeModal();
+  });
+
+  /* ── Category modal ── */
+  let editingCategories = [];
+
+  function openCatModal() {
+    editingCategories = categories.map(c => ({ ...c }));
+    renderCatList();
+    document.getElementById('catModalOverlay').classList.add('active');
+  }
+
+  function closeCatModal() {
+    document.getElementById('catModalOverlay').classList.remove('active');
+  }
+
+  function renderCatList() {
+    const list = document.getElementById('catList');
+    list.innerHTML = '';
+    editingCategories.forEach((c, i) => {
+      const row = document.createElement('div');
+      row.className = 'cat-row';
+
+      const swatch = document.createElement('input');
+      swatch.type = 'color';
+      swatch.className = 'cat-swatch';
+      swatch.value = c.accent || c.bg;
+      swatch.title = '色を選択';
+      swatch.addEventListener('input', () => {
+        editingCategories[i].accent = swatch.value;
+        Object.assign(editingCategories[i], generateCatColors(swatch.value));
+      });
+
+      const nameInput = document.createElement('input');
+      nameInput.type = 'text';
+      nameInput.className = 'cat-name-input';
+      nameInput.value = c.name;
+      nameInput.maxLength = 20;
+      nameInput.placeholder = 'カテゴリ名';
+      nameInput.addEventListener('input', () => editingCategories[i].name = nameInput.value);
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'cat-del-btn';
+      delBtn.textContent = '削除';
+      delBtn.addEventListener('click', () => { editingCategories.splice(i, 1); renderCatList(); });
+
+      row.append(swatch, nameInput, delBtn);
+      list.appendChild(row);
+    });
+  }
+
+  document.getElementById('addCatBtn').addEventListener('click', () => {
+    const accent = '#6366f1';
+    editingCategories.push({
+      id: 'cat_' + Date.now(), name: '新しいカテゴリ',
+      accent, ...generateCatColors(accent)
+    });
+    renderCatList();
+  });
+
+  document.getElementById('catModalSave').addEventListener('click', () => {
+    if (editingCategories.length === 0) { alert('カテゴリは1つ以上必要です'); return; }
+    if (editingCategories.some(c => !c.name.trim())) { alert('カテゴリ名を入力してください'); return; }
+
+    const validIds = new Set(editingCategories.map(c => c.id));
+    const fallback = editingCategories[0].id;
+    events.forEach(ev => { if (!validIds.has(ev.category)) ev.category = fallback; });
+
+    categories = editingCategories.map(c => ({ ...c, name: c.name.trim() }));
+    saveData();
+    applyCategoriesToCSS();
+    buildLegend();
+    renderAll();
+    closeCatModal();
+  });
+
+  document.getElementById('catModalCancel').addEventListener('click', closeCatModal);
+  document.getElementById('catSettingsBtn').addEventListener('click', openCatModal);
+  document.getElementById('catModalOverlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('catModalOverlay')) closeCatModal();
+  });
+
+  /* ── Week navigation ── */
+  document.getElementById('prevWeekBtn').addEventListener('click', () => {
+    currentWeekStart = addDays(currentWeekStart, -7);
+    saveData(); rebuildAll();
+  });
+  document.getElementById('nextWeekBtn').addEventListener('click', () => {
+    currentWeekStart = addDays(currentWeekStart, 7);
+    saveData(); rebuildAll();
+  });
+  document.querySelectorAll('.view-btn').forEach(btn => {
+    btn.addEventListener('click', () => { viewMode = +btn.dataset.weeks; saveData(); rebuildAll(); });
   });
 
   /* ── Interval slider ── */
@@ -530,7 +778,7 @@
     slider.style.setProperty('--fill', (idx / 3 * 100) + '%');
     ticks.forEach((s,i) => s.classList.toggle('active', i === idx));
     buildAxis();
-    buildDayCols();
+    buildDayCols(getDisplayDates());
     renderAll();
     saveData();
   }
@@ -541,7 +789,10 @@
   /* ── Init ── */
   loadData();
   seedSample();
+  applyCategoriesToCSS();
+  buildLegend();
   applyInterval(intervalIdx);
+  rebuildAll();
 </script>
 </body>
 </html>
