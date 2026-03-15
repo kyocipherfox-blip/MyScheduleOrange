@@ -364,7 +364,46 @@ relActualY = (ghostTopViewport - colRect.top) / zoomLevel
 newStartMin = snapMin(yToMin(relActualY), intervalIdx)
 ```
 
-## 7. エラー処理
+## 7. モバイルフルスクリーンレイアウト
+
+### 7.1 目的
+
+スマートフォンで開いたときに画面全体を使ったフル画面表示を実現し、
+iOS Safari のアドレスバー表示切り替えによるレイアウトシフト（揺れ）を防ぐ。
+
+### 7.2 viewport 設定
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+```
+
+`viewport-fit=cover` によりノッチ・ホームインジケーター領域まで描画領域を拡張する。
+
+### 7.3 CSS レイアウト構造
+
+```
+html, body           height: 100%; overflow: hidden; overscroll-behavior: none
+body                 display: flex; flex-direction: column; padding: safe-area-inset
+.table-wrapper       flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain
+.legend              flex-shrink: 0; padding-bottom: max(8px, env(safe-area-inset-bottom))
+```
+
+| プロパティ | 対象 | 効果 |
+|-----------|------|------|
+| `height: 100%` on html/body | ビューポート全高を固定 | アドレスバー高さ変動による揺れを防ぐ |
+| `overflow: hidden` on body | body のスクロールを禁止 | 背景コンテンツが動かない |
+| `overscroll-behavior: none` on body | ページ全体のゴムバンドスクロールを無効化 | iOS Safari の引っ張り挙動を防ぐ |
+| `flex: 1; min-height: 0` on .table-wrapper | 残り高さを table-wrapper に割り当て | コンテナが縮まず常にスクロール可能 |
+| `overscroll-behavior: contain` on .table-wrapper | スクロールが親に伝播しない | グリッド内スクロールのみ許可 |
+| `-webkit-overflow-scrolling: touch` | スムーズスクロール（旧 iOS 互換） | 慣性スクロールが効く |
+| `env(safe-area-inset-bottom)` on .legend | ホームインジケーター領域を確保 | ノッチデバイスで凡例が隠れない |
+
+### 7.4 PC との共存
+
+PC では `html/body` の `height: 100%` は通常のフル高さ表示と等価のため影響なし。
+`overflow: hidden` はボディ全体のスクロールを禁止するが、`.table-wrapper` の `overflow-y: auto` でグリッドのスクロールは維持される。
+
+## 8. エラー処理
 
 | シナリオ | 処理 |
 |---------|------|

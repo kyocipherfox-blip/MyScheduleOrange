@@ -1,9 +1,23 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html {
+  height: 100%;
+  overflow: hidden;
+}
 body {
   font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
-  background: #f0f2f5; color: #333; padding: 20px;
+  background: #f0f2f5; color: #333;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  overscroll-behavior: none;
+  padding: 20px;
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+  padding-left: max(20px, env(safe-area-inset-left));
+  padding-right: max(20px, env(safe-area-inset-right));
 }
 body.dragging { user-select: none; cursor: ns-resize; }
+body.moving { cursor: grabbing !important; user-select: none; }
 
 h1 { text-align: center; font-size: 1.5rem; margin-bottom: 14px; color: #2c3e50; }
 
@@ -76,8 +90,14 @@ h1 { text-align: center; font-size: 1.5rem; margin-bottom: 14px; color: #2c3e50;
 
 /* ── Schedule layout ── */
 .table-wrapper {
-  overflow-x: auto; border-radius: 10px;
+  overflow-x: auto;
+  overflow-y: auto;
+  border-radius: 10px;
   box-shadow: 0 4px 16px rgba(0,0,0,.1); background: #fff;
+  flex: 1;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 .schedule-inner { min-width: 720px; }
 .schedule-header {
@@ -115,7 +135,6 @@ h1 { text-align: center; font-size: 1.5rem; margin-bottom: 14px; color: #2c3e50;
 /* ── Event blocks (colors via dynamic-cat-css) ── */
 .event-block { cursor: grab; }
 .event-block:active { cursor: grabbing; }
-body.moving { cursor: grabbing !important; user-select: none; }
 .event-block {
   position: absolute; left: 2px; right: 2px; border-radius: 5px;
   overflow: hidden; display: flex; flex-direction: column;
@@ -151,7 +170,10 @@ body.moving { cursor: grabbing !important; user-select: none; }
 .resize-handle:hover { background: rgba(0,0,0,.18); }
 
 /* ── Legend ── */
-.legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; justify-content: center; }
+.legend {
+  display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; justify-content: center;
+  flex-shrink: 0;
+}
 .legend-badge {
   display: inline-block; padding: 3px 12px; border-radius: 5px;
   font-size: 0.75rem; font-weight: 600;
